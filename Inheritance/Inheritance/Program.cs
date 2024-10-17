@@ -1,49 +1,127 @@
-﻿using Inheritance.Models;
+﻿namespace Inheritance;
 
-namespace Inheritance;
-
-//S - Single responsibility
-//
-//O - Open for extensions -Close for modifications
-//
-//L I D
-
-public abstract class Logger
+public abstract class Vehicle
 {
-    public abstract void Log(string message);
+    protected string Name { get; }
+
+    protected Vehicle(string name)
+    {
+        Name = name;
+    }
+
+    public void Start()
+    {
+        Console.WriteLine($"{Name} Started...");
+    }
+
+    public void Stop()
+    {
+        Console.WriteLine($"{Name} Stopped...");
+    }
+
+    public abstract void Drive();
 }
 
-public class FileLogger : Logger
+public class Car : Vehicle
 {
-    public override void Log(string message)
+    public Car(string name) : base(name)
     {
-        File.AppendAllText("log.txt", message + Environment.NewLine);
+    }
+
+    public override void Drive()
+    {
+        Console.WriteLine($"Driving {Name} on 4 wheel");
     }
 }
 
-public class ConsoleLogger : Logger
+public sealed class Motorcycle : Vehicle
 {
-    public override void Log(string message)
+    public Motorcycle() : base("Moto")
     {
-        Console.WriteLine(message);
+    }
+
+    public override void Drive()
+    {
+        Console.WriteLine("Driving on 2 wheel");
     }
 }
 
-public class CompositeLogger : Logger
+public interface IFlyingObject
 {
-    private readonly FileLogger _fileLogger;
-    private readonly ConsoleLogger _consoleLogger;
+    void Fly();
+}
 
-    public CompositeLogger(FileLogger fileLogger, ConsoleLogger consoleLogger)
+public class Plane : Vehicle, IFlyingObject
+{
+    public Plane() : base("Plane")
     {
-        _fileLogger = fileLogger;
-        _consoleLogger = consoleLogger;
     }
 
-    public override void Log(string message)
+    public override void Drive()
     {
-        _fileLogger.Log(message);
-        _consoleLogger.Log(message);
+        Console.WriteLine("Driving only in airport");
+    }
+
+    public void Fly()
+    {
+        Console.WriteLine("Plane is Flying....");
+    }
+}
+
+public class Bird : IFlyingObject
+{
+    public void Fly()
+    {
+        Console.WriteLine("Bird is flying...");
+    }
+}
+
+public class Pilot
+{
+    public IFlyingObject FlyingObject { get; set; }
+
+    public void FlyObject()
+    {
+        if (FlyingObject != null)
+        {
+            FlyingObject.Fly();
+        }
+    }
+}
+
+public class Soldier
+{
+    public Vehicle Vehicle { get; set; }
+
+    public void DriveVehicle()
+    {
+        if (Vehicle is not null)
+        {
+            Vehicle.Drive();
+        }
+    }
+}
+
+public interface ICSharpDeveloper
+{
+    public void WriteCode();
+}
+
+public interface IJavaDeveloper
+{
+    public void WriteCode();
+}
+
+public class Employee : IJavaDeveloper, ICSharpDeveloper
+{
+    void IJavaDeveloper.WriteCode()
+    {
+        Console.WriteLine("Writing Java code");
+    }
+
+    void ICSharpDeveloper.WriteCode()
+    {
+        Console.WriteLine("Writing C# code");
     }
 }
 
@@ -51,54 +129,52 @@ public class Program
 {
     public static void Main()
     {
-        Logger logger = new FileLogger();
+        Employee emp = new Employee();
+        IJavaDeveloper javaDev = emp;
+        javaDev.WriteCode();
 
-        logger.Log("Manager object created");
+        ICSharpDeveloper csharpDev = emp;
+        csharpDev.WriteCode();
 
-        var manager = new Manager
-        {
-            BirthDate = new DateTime(1996, 10, 11),
-            Salary = 4500m,
-            DepartmentName = "Finance",
-            Name = "Levani"
-        };
+        var car = new Car("Car");
+        var moto = new Motorcycle();
+        var plane = new Plane();
+        var bird = new Bird();
 
-        logger.Log("lecturer object created");
+        var soldier = new Soldier();
+        soldier.Vehicle = car;
+        soldier.DriveVehicle();
 
-        var lecturer = new Lecturer
-        {
-            BirthDate = new DateTime(1994, 10, 11),
-            Salary = 4600m,
-            Subject = "C#",
-            Name = "Daviti"
-        };
+        soldier.Vehicle = moto;
+        soldier.DriveVehicle();
 
-        logger.Log("it object created");
+        soldier.Vehicle = plane;
+        soldier.DriveVehicle();
 
-        var it = new SupportMember()
-        {
-            BirthDate = new DateTime(1994, 10, 11),
-            Salary = 3500,
-            Field = "It Support",
-            Name = "Giorgi"
-        };
+        var pilot = new Pilot();
+        pilot.FlyingObject = plane;
+        pilot.FlyObject();
 
-        List<Employee> employees = new List<Employee>
-        {
-            manager,
-            lecturer,
-            it
-        };
+        pilot.FlyingObject = bird;
+        pilot.FlyObject();
 
-        Employee emp = new Lecturer();
+        var numbersList = new List<int> { 1, 2, 3, 4 };
+        var numbersArray = new[] { 1, 2, 3, 4 };
+        Sum(numbersList);
 
-        var totalAmount = 0m;
-        foreach (Employee employee in employees)
-        {
-            logger.Log("Calculating salary");
-            totalAmount += employee.CalculateSalary(100);
-        }
+        Sum(numbersArray);
 
         Console.WriteLine();
+    }
+
+    public static int Sum(IEnumerable<int> numbers)
+    {
+        var sum = 0;
+        foreach (var number in numbers)
+        {
+            sum += number;
+        }
+
+        return sum;
     }
 }
